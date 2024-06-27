@@ -5,8 +5,7 @@ include 'functions.php';
 if (isset($_SESSION['email']) && isset($_SESSION['is_authenticated']) && $_SESSION['is_authenticated'] === true) {
     header("Location: secure_page.php");
     exit();
-}
-else if (!isset($_SESSION['otp_email'])) {
+} else if (!isset($_SESSION['otp_email'])) {
     header("Location: secure_page.php");
     exit();
 }
@@ -18,13 +17,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $otp = $_POST['otp'];
     $email = $_SESSION['otp_email'];
 
-    $result = verify_otp($email, $otp);
-    if ($result !== null) {
-        $message = $result;
+    try {
+        $result = verify_otp($email, $otp);
+        if ($result != null) {
+            $message = $result;
+        } else {
+            header('Location: secure_page.php');
+        }
+    } catch (Exception $e) {
+        $message = "An error occurred: " . $e->getMessage();
     }
-
-    header('Location: secure_page.php');
-    exit();
 }
 ?>
 
