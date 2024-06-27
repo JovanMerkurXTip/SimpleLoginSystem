@@ -19,13 +19,21 @@ function register_user($email, $password)
     $salt = generate_salt();
     $hashed_password = hash_password($password, $salt);
 
-    $stmt = $conn->prepare("INSERT INTO users (email, password, salt) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $email, $hashed_password, $salt);
-    $stmt->execute();
-    $stmt->close();
-
-    // TODO: Add email verification
+    try {
+        $stmt = $conn->prepare("INSERT INTO users (email, password, salt) VALUES (?, ?, ?)");
+        if (!$stmt) {
+            throw new Exception($conn->error);
+        }
+        $stmt->bind_param("sss", $email, $hashed_password, $salt);
+        if (!$stmt->execute()) {
+            throw new Exception($stmt->error);
+        }
+        $stmt->close();
+    } catch (Exception $e) {
+        throw $e;
+    }
 }
+
 
 function authenticate_user($email, $password) {
     global $conn;
@@ -38,7 +46,7 @@ function authenticate_user($email, $password) {
     $stmt->close();
 
     if (!$user_id || $db_password !== hash_password($password, $salt)) {
-        echo "Invalid email or password\n";
+        // echo "Invalid email or password\n";
         return false; // TODO: Handle this case
     }
 
