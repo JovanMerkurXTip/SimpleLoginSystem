@@ -1,11 +1,11 @@
 <?php
 include 'functions.php';
 
-$message = '';  // Initialize the message variable
+$message = '';
 $email = '';
 $password = '';
 $repeat_password = '';
-$registration_successful = false;  // Flag to trigger modal
+$registration_successful = false; // Flag to trigger modal
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             try {
                 register_user($email, $password);
                 $message = "Registration successful. You can now login.";
-                $registration_successful = true;  // Set flag to true
+                $registration_successful = true;
             } catch (Exception $e) {
                 if ($e->getCode() === 1062) {
                     $message = "Email already exists.";

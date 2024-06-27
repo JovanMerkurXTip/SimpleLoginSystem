@@ -35,7 +35,8 @@ function register_user($email, $password)
 }
 
 
-function authenticate_user($email, $password) {
+function authenticate_user($email, $password)
+{
     global $conn;
 
     $stmt = $conn->prepare("SELECT id, password, salt FROM users WHERE email = ?");
@@ -57,17 +58,22 @@ function send_otp($user_id)
 {
     global $conn;
 
-    $otp = rand(100000, 999999);
-    $otp_expiration = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+    try {
+        $otp = rand(100000, 999999);
+        $otp_expiration = date('Y-m-d H:i:s', strtotime('+5 minutes'));
 
-    $stmt = $conn->prepare("INSERT INTO login_otp_codes (user_id, otp, otp_expiration) VALUES (?, ?, ?)
+        $stmt = $conn->prepare("INSERT INTO login_otp_codes (user_id, otp, otp_expiration) VALUES (?, ?, ?)
                             ON DUPLICATE KEY UPDATE otp = ?, otp_expiration = ?");
-    $stmt->bind_param("issss", $user_id, $otp, $otp_expiration, $otp, $otp_expiration);
-    $stmt->execute();
-    $stmt->close();
+        $stmt->bind_param("issss", $user_id, $otp, $otp_expiration, $otp, $otp_expiration);
+        $stmt->execute();
+        $stmt->close();
 
-    // TODO: Send OTP to user's email
-    echo "USER OTP: $otp\n";
+        // TODO: Send OTP to user's email
+        return true;
+    } catch (Exception $e) {
+        // throw $e;
+        return false;
+    }
 }
 
 function verify_otp($email, $otp)
@@ -93,21 +99,23 @@ function verify_otp($email, $otp)
     $stmt->fetch();
     $stmt->close();
 
-    if (!($db_otp === $otp && strtotime($otp_expiration) > time())) {
-        echo "Invalid OTP";
-        return false; // TODO: Handle this case
+    if ($db_otp === $otp && strtotime($otp_expiration) > time()) {
+
+
+        session_start();
+        $_SESSION['email'] = $email;
+
+        $stmt = $conn->prepare("DELETE FROM login_otp_codes WHERE user_id = ?");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $stmt->close();
+
+        echo "OTP verified successfully\n";
+        return true;
     }
 
-    session_start();
-    $_SESSION['email'] = $email;
-
-    $stmt = $conn->prepare("DELETE FROM login_otp_codes WHERE user_id = ?");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $stmt->close();
-
-    header("Location: secure_page.php");
-    exit();
+    echo "Invalid OTP";
+    return false; // TODO: Handle this case
 }
 
 function set_remember_token($email)
@@ -150,7 +158,8 @@ function check_remember_token()
     $_SESSION['email'] = $email;
 }
 
-function generate_reset_link($email) {
+function generate_reset_link($email)
+{
     global $conn;
 
     $token = bin2hex(random_bytes(32));
@@ -179,7 +188,8 @@ function generate_reset_link($email) {
     echo "RESET LINK: $reset_link\n";
 }
 
-function reset_password($token, $new_password) {
+function reset_password($token, $new_password)
+{
     global $conn;
 
     $stmt = $conn->prepare("SELECT user_id FROM password_reset_tokens WHERE token = ? AND expiration > NOW()");
