@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <?php include 'includes/header.php'; ?>
 
 <div class="d-flex justify-content-center align-items-center vh-100">
-    <form class="form border p-4 bg-light" method="post" action="login.php">
+    <form class="form border p-4 bg-light" method="post" action="login.php" onsubmit="showLoader()">
         <h4>Login</h4>
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php echo $message; ?>
             </div>
         <?php endif; ?>
-        <button type="submit" class="btn btn-primary w-100">Login</button>
+        <button type="submit" class="btn btn-primary w-100" id="loginButton">Login</button>
         <div class="d-flex justify-content-between mt-3">
             <a href="register.php">Create an account</a>
             <a href="forgot_password.php">Forgot password?</a>
@@ -64,3 +64,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </div>
 
 <?php include 'includes/footer.php'; ?>
+
+<!-- Include FontAwesome or any other icon library for the loader -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<script>
+    function showLoader() {
+        const loginButton = document.getElementById('loginButton');
+        loginButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+        loginButton.disabled = true;
+    }
+</script>

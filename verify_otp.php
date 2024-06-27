@@ -43,6 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
         <?php endif; ?>
         <button type="submit" class="btn btn-primary w-100">Verify</button>
+        <div class="d-flex justify-content-between mt-3">
+            <a href="logout.php">Cancel</a>
+        </div>
     </form>
 </div>
 

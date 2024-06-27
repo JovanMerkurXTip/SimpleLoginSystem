@@ -1,6 +1,7 @@
 <?php
 
 include 'config.php';
+include 'mail_helper.php';
 
 function generate_salt($length = 16)
 {
@@ -68,7 +69,17 @@ function send_otp($user_id)
         $stmt->execute();
         $stmt->close();
 
-        // TODO: Send OTP to user's email
+        $stmt = $conn->prepare("SELECT email FROM users WHERE id = ?");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $stmt->bind_result($email);
+        $stmt->fetch();
+        $stmt->close();
+
+        if (!send_email($email, 'Login OTP', "Your OTP is: $otp")) {
+            return false;
+        }
+
         return true;
     } catch (Exception $e) {
         // throw $e;
