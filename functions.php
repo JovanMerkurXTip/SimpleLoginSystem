@@ -135,7 +135,7 @@ function check_remember_token()
     global $conn;
 
     if (!isset($_COOKIE['remember_token'])) {
-        echo "No remember token found\n";
+        echo "<script>console.log('No remember token found.');</script>";
         return false; // TODO: Handle this case
     }
 
@@ -148,7 +148,7 @@ function check_remember_token()
     $stmt->close();
 
     if (!$email) {
-        echo "Invalid remember token\n";
+        echo "<script>console.log('Invalid remember token.');</script>";
         return false; // TODO: Handle this case
     }
 

@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <?php include 'includes/header.php'; ?>
 
 <div class="d-flex justify-content-center align-items-center vh-100">
-    <form class="border p-4 bg-light" method="post" action="login.php">
+    <form class="form border p-4 bg-light" method="post" action="login.php">
         <h4>Login</h4>
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>

@@ -1,11 +1,9 @@
 body {
     background-color: #f0f0f0;
     font-family: Arial, sans-serif;
-    margin: 2rem;
-    padding: 0;
 }
 
-form {
+.form {
     width: 60vh;
     border-radius: 10px;
 }

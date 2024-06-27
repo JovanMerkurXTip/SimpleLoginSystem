@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <?php include 'includes/header.php'; ?>
 
 <div class="d-flex justify-content-center align-items-center vh-100">
-    <form class="border p-4 bg-light" method="post" action="verify_otp.php">
+    <form class="form border p-4 bg-light" method="post" action="verify_otp.php">
         <h4>Verify One-time Passcode</h4>
         <div class="mb-3 mt-3">
             <label for="otp" class="form-label">Code is sent to your email. Please enter it below.</label>
