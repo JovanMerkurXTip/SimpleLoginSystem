@@ -2,6 +2,14 @@
 session_start();
 include 'functions.php';
 
+if (isset($_SESSION['email']) && isset($_SESSION['is_authenticated']) && $_SESSION['is_authenticated'] === true) {
+    header("Location: secure_page.php");
+    exit();
+} else if (isset($_SESSION['otp_email'])) {
+    header("Location: verify_otp.php");
+    exit();
+}
+
 $message = '';
 $email = '';
 $password = '';
@@ -17,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $message = "Invalid email or password.";
             $password = '';
         } else {
-            $_SESSION['email'] = $email;
+            $_SESSION['otp_email'] = $email;
             if (send_otp($user_id)) {
                 header('Location: verify_otp.php');
                 exit();
@@ -36,11 +44,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <h4>Login</h4>
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>
-            <input type="email" class="form-control" id="email" name="email" placeholder="Email" value="<?php echo htmlspecialchars($email); ?>" required>
+            <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" required>
         </div>
         <div class="mb-3">
             <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password" placeholder="Password" value="<?php echo htmlspecialchars($password); ?>" required>
+            <input type="password" class="form-control" id="password" name="password" value="<?php echo htmlspecialchars($password); ?>" required>
         </div>
         <?php if ($message && !$otp_sent) : ?>
             <div class="alert alert-danger small" role="alert">
@@ -48,6 +56,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
         <?php endif; ?>
         <button type="submit" class="btn btn-primary w-100">Login</button>
+        <div class="d-flex justify-content-between mt-3">
+            <a href="register.php">Create an account</a>
+            <a href="forgot_password.php">Forgot password?</a>
+        </div>
     </form>
 </div>
 

@@ -38,17 +38,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <div class="d-flex justify-content-center align-items-center vh-100">
     <form class="border p-4 bg-light" method="post" action="register.php">
+        <h4>Create an Account</h4>
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>
-            <input type="email" class="form-control" id="email" name="email" placeholder="Email" value="<?php echo htmlspecialchars($email); ?>" required>
+            <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" required>
         </div>
         <div class="mb-3">
             <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password" placeholder="Password" value="<?php echo htmlspecialchars($password); ?>" required>
+            <input type="password" class="form-control" id="password" name="password" value="<?php echo htmlspecialchars($password); ?>" required>
         </div>
         <div class="mb-3">
             <label for="repeat_password" class="form-label">Repeat Password</label>
-            <input type="password" class="form-control" id="repeat_password" name="repeat_password" placeholder="Password" value="<?php echo htmlspecialchars($repeat_password); ?>" required>
+            <input type="password" class="form-control" id="repeat_password" name="repeat_password" value="<?php echo htmlspecialchars($repeat_password); ?>" required>
         </div>
         <?php if ($message && !$registration_successful) : ?>
             <div class="alert alert-danger" role="alert">
@@ -56,8 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
         <?php endif; ?>
         <button type="submit" class="btn btn-primary w-100">Register</button>
-        <div class="text-center mt-3">
-            <a href="login.php">Go to login</a>
+        <div class="d-flex justify-content-between mt-3">
+            <a href="login.php">Go to Login</a>
         </div>
     </form>
 </div>

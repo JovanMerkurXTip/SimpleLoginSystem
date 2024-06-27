@@ -2,18 +2,29 @@
 session_start();
 include 'functions.php';
 
+if (isset($_SESSION['email']) && isset($_SESSION['is_authenticated']) && $_SESSION['is_authenticated'] === true) {
+    header("Location: secure_page.php");
+    exit();
+}
+else if (!isset($_SESSION['otp_email'])) {
+    header("Location: secure_page.php");
+    exit();
+}
+
+
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $otp = $_POST['otp'];
-    $email = $_SESSION['email'];
-    if (verify_otp($email, $otp)) {
-        $message = '';
-        header('Location: secure_page.php');
-        exit();
-    } else {
-        $message = 'Invalid OTP';
+    $email = $_SESSION['otp_email'];
+
+    $result = verify_otp($email, $otp);
+    if ($result !== null) {
+        $message = $result;
     }
+
+    header('Location: secure_page.php');
+    exit();
 }
 ?>
 

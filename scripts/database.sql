@@ -1,13 +1,18 @@
+-- --------------------------------------------------------
 -- Database info:
---      Server version: 10.4.28-MariaDB - mariadb.org binary distribution
+--      Server version: 10.4.28 MariaDB
 --      Protocol version: 10
---      User: root@localhost
 -- Web server info:
---      Apache/2.4.56 (Win64) OpenSSL/1.1.1t PHP/8.2.4
+--      Apache 2.4.56 (Win64)
+--      OpenSSL 1.1.1t
 -- PHPMyAdmin info:
 --      Version information: 5.2.1
-
+--      PHP 8.2.4
 -- --------------------------------------------------------
+
+-- TODO: FIX WITH NEW MODEL
+
+-- ! DO NOT USE THIS SCRIPT
 
 CREATE DATABASE IF NOT EXISTS `simplelogin`;
 

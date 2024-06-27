@@ -76,6 +76,7 @@ function send_otp($user_id)
     }
 }
 
+// Returns null if there is no errors - so its successful if it returns null
 function verify_otp($email, $otp)
 {
     global $conn;
@@ -88,8 +89,7 @@ function verify_otp($email, $otp)
     $stmt->close();
 
     if (!$user_id) {
-        echo "User not found\n";
-        return false; // TODO: Handle this case
+        return "User not found.";
     }
 
     $stmt = $conn->prepare("SELECT otp, otp_expiration FROM login_otp_codes WHERE user_id = ?");
@@ -99,23 +99,21 @@ function verify_otp($email, $otp)
     $stmt->fetch();
     $stmt->close();
 
-    if ($db_otp === $otp && strtotime($otp_expiration) > time()) {
-
-
-        session_start();
-        $_SESSION['email'] = $email;
-
-        $stmt = $conn->prepare("DELETE FROM login_otp_codes WHERE user_id = ?");
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $stmt->close();
-
-        echo "OTP verified successfully\n";
-        return true;
+    if (!($db_otp === $otp && strtotime($otp_expiration) > time())) {
+        return "Invalid or expired passcode.";
     }
 
-    echo "Invalid OTP";
-    return false; // TODO: Handle this case
+    session_start();
+    $_SESSION['email'] = $email;
+    $_SESSION['otp_email'] = null;
+    $_SESSION['is_authenticated'] = true;
+
+    $stmt = $conn->prepare("DELETE FROM login_otp_codes WHERE user_id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $stmt->close();
+
+    return null;
 }
 
 function set_remember_token($email)
