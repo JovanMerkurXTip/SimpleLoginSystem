@@ -1,9 +1,11 @@
 <?php
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 
-function send_email($to, $subject, $body) {
+function send_email($to, $subject, $body)
+{
     $config = require 'email_config.php';
 
     $mail = new PHPMailer(true);
@@ -33,4 +35,24 @@ function send_email($to, $subject, $body) {
         error_log("Message could not be sent. Mailer Error: {$mail->ErrorInfo}");
         return false;
     }
+}
+
+function send_otp_email($to, $otp)
+{
+    $subject = 'One-time Passcode';
+
+    $body = file_get_contents('html/email_template_otp_code.html');
+    $body = str_replace('%OTP%', $otp, $body);
+
+    return send_email($to, $subject, $body);
+}
+
+function send_reset_password_link($to, $link)
+{
+    $subject = 'Reset Password';
+
+    $body = file_get_contents('html/email_template_reset_password.html');
+    $body = str_replace('%LINK%', $link, $body);
+
+    return send_email($to, $subject, $body);
 }

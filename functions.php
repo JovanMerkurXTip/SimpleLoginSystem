@@ -76,7 +76,7 @@ function send_otp($user_id)
         $stmt->fetch();
         $stmt->close();
 
-        if (!send_email($email, 'Login OTP', "Your OTP is: $otp")) {
+        if (!send_otp_email($email, $otp)) {
             return false;
         }
 
