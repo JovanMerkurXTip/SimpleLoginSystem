@@ -1,7 +1,8 @@
 <?php
 include 'auth.php';
-
 ?>
+
+<!-- This is the page that's secured behind login. It will be first thing user can see after login, like a dashboard or something similar. -->
 
 <?php include 'includes/header.php'; ?>
 

@@ -76,8 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <?php include 'includes/footer.php'; ?>
 
-<!-- Include FontAwesome or any other icon library for the loader -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <script>
     function showLoader() {
         const loginButton = document.getElementById('loginButton');

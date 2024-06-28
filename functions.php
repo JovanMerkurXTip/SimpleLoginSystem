@@ -3,6 +3,11 @@
 include 'config.php';
 include 'mail_helper.php';
 
+function echo_console_log($message)
+{
+    echo "<script>console.log('$message');</script>";
+}
+
 function generate_salt($length = 16)
 {
     return bin2hex(random_bytes($length));
@@ -48,7 +53,7 @@ function authenticate_user($email, $password)
     $stmt->close();
 
     if (!$user_id || $db_password !== hash_password($password, $salt)) {
-        // echo "Invalid email or password\n";
+        echo_console_log("Invalid email or password.");
         return false; // TODO: Handle this case
     }
 
@@ -82,7 +87,6 @@ function send_otp($user_id)
 
         return true;
     } catch (Exception $e) {
-        // throw $e;
         return false;
     }
 }
@@ -146,7 +150,7 @@ function check_remember_token()
     global $conn;
 
     if (!isset($_COOKIE['remember_token'])) {
-        echo "<script>console.log('No remember token found.');</script>";
+        echo_console_log("No remember token found.");
         return false;
     }
 
@@ -159,7 +163,7 @@ function check_remember_token()
     $stmt->close();
 
     if (!$email) {
-        echo "<script>console.log('Invalid remember token.');</script>";
+        echo_console_log("Invalid remember token.");
         return false;
     }
 
@@ -175,71 +179,82 @@ function generate_reset_link($email)
 {
     global $conn;
 
-    $token = bin2hex(random_bytes(32));
-    $expiration = date('Y-m-d H:i:s', strtotime('+1 hour'));
-    $reset_link = BASE_URL . "reset_password.php?token=$token";
+    try {
+        $token = bin2hex(random_bytes(32));
+        $expiration = date('Y-m-d H:i:s', strtotime('+1 hour'));
+        $reset_link = BASE_URL . "reset_password.php?token=$token";
 
-    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $stmt->bind_result($user_id);
-    $stmt->fetch();
-    $stmt->close();
+        $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $stmt->bind_result($user_id);
+        $stmt->fetch();
+        $stmt->close();
 
-    if (!$user_id) {
-        echo "User not found\n";
-        return false; // TODO: Handle this case
-    }
+        if (!$user_id) {
+            return false;
+        }
 
-    $stmt = $conn->prepare("INSERT INTO password_reset_tokens (user_id, token, expiration) VALUES (?, ?, ?)
+        $stmt = $conn->prepare("INSERT INTO password_reset_tokens (user_id, token, expiration) VALUES (?, ?, ?)
                             ON DUPLICATE KEY UPDATE token = ?, expiration = ?");
-    $stmt->bind_param("issss", $user_id, $token, $expiration, $token, $expiration);
-    $stmt->execute();
-    $stmt->close();
+        $stmt->bind_param("issss", $user_id, $token, $expiration, $token, $expiration);
+        $stmt->execute();
+        $stmt->close();
 
-    // TODO: Send reset link to user's email
-    echo "RESET LINK: $reset_link\n";
+        if (!send_reset_password_link($email, $reset_link)) {
+            return false;
+        }
+
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
 }
 
 function reset_password($token, $new_password)
 {
     global $conn;
 
-    $stmt = $conn->prepare("SELECT user_id FROM password_reset_tokens WHERE token = ? AND expiration > NOW()");
-    $stmt->bind_param("s", $token);
-    $stmt->execute();
-    $stmt->bind_result($user_id);
-    $stmt->fetch();
-    $stmt->close();
+    try {
+        $stmt = $conn->prepare("SELECT user_id FROM password_reset_tokens WHERE token = ? AND expiration > NOW()");
+        $stmt->bind_param("s", $token);
+        $stmt->execute();
+        $stmt->bind_result($user_id);
+        $stmt->fetch();
+        $stmt->close();
 
-    if (!$user_id) {
-        echo "Invalid or expired token\n";
-        return false; // TODO: Handle this case
+        if (!$user_id) {
+            echo_console_log("Invalid or expired token.");
+            return false; // TODO: Handle this case
+        }
+
+        $stmt = $conn->prepare("SELECT email, salt FROM users WHERE id = ?");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $stmt->bind_result($email, $salt);
+        $stmt->fetch();
+        $stmt->close();
+
+        if (!$email) {
+            echo_console_log("User not found.");
+            return false; // TODO: Handle this case
+        }
+
+        $hashed_password = hash_password($new_password, $salt);
+        $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+        $stmt->bind_param("si", $hashed_password, $user_id);
+        $stmt->execute();
+        $stmt->close();
+
+        $stmt = $conn->prepare("DELETE FROM password_reset_tokens WHERE user_id = ?");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $stmt->close();
+
+        echo_console_log("Password reset successfully.");
+        return true;
+
+    } catch (Exception $e) {
+        return false;
     }
-
-    $stmt = $conn->prepare("SELECT email, salt FROM users WHERE id = ?");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $stmt->bind_result($email, $salt);
-    $stmt->fetch();
-    $stmt->close();
-
-    if (!$email) {
-        echo "User not found\n";
-        return false; // TODO: Handle this case
-    }
-
-    $hashed_password = hash_password($new_password, $salt);
-    $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
-    $stmt->bind_param("si", $hashed_password, $user_id);
-    $stmt->execute();
-    $stmt->close();
-
-    $stmt = $conn->prepare("DELETE FROM password_reset_tokens WHERE user_id = ?");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $stmt->close();
-
-    echo "Password reset successfully\n";
-    // TODO: Redirect to login page
 }
