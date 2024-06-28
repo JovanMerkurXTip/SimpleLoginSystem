@@ -1,5 +1,5 @@
 <?php
-include 'functions.php';
+require __DIR__ . '/../services/functions.php';
 
 $message = '';
 $verify_successful = false; // Flag to trigger modal
@@ -21,7 +21,7 @@ if (empty($token)) {
 }
 ?>
 
-<?php include 'includes/header.php'; ?>
+<?php include __DIR__ . '/../includes/header.php'; ?>
 
 <div class="d-flex justify-content-center align-items-center vh-100">
     <form class="form border p-4 bg-light" method="post" action="verify_account.php?token=<?php echo htmlspecialchars($_GET['token'] ?? ''); ?>">
@@ -36,9 +36,9 @@ if (empty($token)) {
             <div class="alert alert-success" role="alert">
                 Account verified successfully. You can now sign in.
             </div>
-            <a href="login.php" class="btn btn-outline-success w-100">Go to Login</a>
+            <a href="../auth/login.php" class="btn btn-outline-success w-100">Go to Login</a>
         <?php endif; ?>
     </form>
 </div>
 
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/../includes/footer.php'; ?>

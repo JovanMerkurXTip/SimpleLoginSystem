@@ -1,5 +1,5 @@
 <?php
-include 'functions.php';
+require __DIR__ . '/../services/functions.php';
 
 $message = '';
 $password = '';
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 ?>
 
-<?php include 'includes/header.php'; ?>
+<?php include __DIR__ . '/../includes/header.php'; ?>
 
 <div class="d-flex justify-content-center align-items-center vh-100">
     <form class="form border p-4 bg-light" method="post" action="reset_password.php?token=<?php echo htmlspecialchars($_GET['token'] ?? ''); ?>">
@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/../includes/footer.php'; ?>
 
 <script>
     $(document).ready(function() {
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             successModal.show();
 
             $('#redirectLoginButton').click(function() {
-                window.location.href = 'login.php';
+                window.location.href = '../auth/login.php';
             });
         <?php endif; ?>
     });

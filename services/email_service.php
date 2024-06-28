@@ -5,8 +5,7 @@ use PHPMailer\PHPMailer\Exception;
 
 function send_email($to, $subject, $body)
 {
-    $config = require 'email_config.php';
-
+    $config = require '../config/email_config.php';
     $mail = new PHPMailer(true);
 
     try {
@@ -39,7 +38,7 @@ function send_otp_email($to, $otp)
 {
     $subject = 'One-time Passcode';
 
-    $body = file_get_contents('html/email_template_otp_code.html');
+    $body = file_get_contents('../templates/email_template_otp_code.html');
     $body = str_replace('%OTP%', $otp, $body);
 
     return send_email($to, $subject, $body);
@@ -49,7 +48,7 @@ function send_reset_password_link($to, $link)
 {
     $subject = 'Reset Password';
 
-    $body = file_get_contents('html/email_template_reset_password.html');
+    $body = file_get_contents('../templates/email_template_reset_password.html');
     $body = str_replace('%LINK%', $link, $body);
 
     return send_email($to, $subject, $body);
@@ -59,7 +58,7 @@ function send_verify_account_link($to, $link)
 {
     $subject = 'Verify Account';
 
-    $body = file_get_contents('html/email_template_verify_account.html');
+    $body = file_get_contents('../templates/email_template_verify_account.html');
     $body = str_replace('%LINK%', $link, $body);
 
     return send_email($to, $subject, $body);

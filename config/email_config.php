@@ -2,9 +2,9 @@
 
 use PHPMailer\PHPMailer\PHPMailer;
 
-require 'vendor/phpmailer/phpmailer/src/Exception.php';
-require 'vendor/phpmailer/phpmailer/src/PHPMailer.php';
-require 'vendor/phpmailer/phpmailer/src/SMTP.php';
+require __DIR__ . '/../vendor/phpmailer/phpmailer/src/Exception.php';
+require __DIR__ . '/../vendor/phpmailer/phpmailer/src/PHPMailer.php';
+require __DIR__ . '/../vendor/phpmailer/phpmailer/src/SMTP.php';
 
 return [
     'smtp' => [
@@ -17,6 +17,5 @@ return [
         'from_name' => 'MerkurXtip EURO 2024',
         'charset' => 'UTF-8',
     ],
-    'reset_link_base_url' => 'http://localhost/reset_password.php',
     'admin_email' => 'j.dozic@merkurxtip.rs'
 ];

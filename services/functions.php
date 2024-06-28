@@ -1,7 +1,7 @@
 <?php
 
-include 'config.php';
-include 'mail_helper.php';
+include __DIR__ . '\..\config\config.php';
+include __DIR__ . '\..\services\email_service.php';
 
 function echo_console_log($message)
 {
@@ -47,6 +47,10 @@ function register_user($email, $password)
             throw new Exception("Failed to send verification email.");
         }
     } catch (Exception $e) {
+        $stmt = $conn->prepare("DELETE FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $stmt->close();
         throw $e;
     }
 }
@@ -58,7 +62,7 @@ function generate_registration_verification_link($email)
     try {
         $token = bin2hex(random_bytes(32));
         $expiration = date('Y-m-d H:i:s', strtotime('+1 day'));
-        $verification_link = BASE_URL . "verify_account.php?token=$token";
+        $verification_link = BASE_URL . "auth/verify_account.php?token=$token";
 
         $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
@@ -126,8 +130,6 @@ function authenticate_user($email, $password)
 {
     global $conn;
 
-    // TODO: Refuse if user is not verified.
-
     $stmt = $conn->prepare("SELECT id, password, salt, is_verified FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -184,7 +186,6 @@ function send_otp($user_id)
     }
 }
 
-// Returns null if there is no errors - so its successful if it returns null
 function verify_otp($email, $otp)
 {
     global $conn;
@@ -222,6 +223,7 @@ function verify_otp($email, $otp)
     $stmt->close();
 
     return null;
+    // Returns null if there is no errors - so its successful if it returns null
 }
 
 function set_remember_token($email)
@@ -275,7 +277,7 @@ function generate_reset_link($email)
     try {
         $token = bin2hex(random_bytes(32));
         $expiration = date('Y-m-d H:i:s', strtotime('+1 hour'));
-        $reset_link = BASE_URL . "reset_password.php?token=$token";
+        $reset_link = BASE_URL . "auth/reset_password.php?token=$token";
 
         $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
