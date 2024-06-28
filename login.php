@@ -2,7 +2,10 @@
 session_start();
 include 'functions.php';
 
-if (isset($_SESSION['email']) && isset($_SESSION['is_authenticated']) && $_SESSION['is_authenticated'] === true) {
+if (check_remember_token()) {
+    header("Location: secure_page.php");
+    exit();
+} else if (isset($_SESSION['email']) && isset($_SESSION['is_authenticated']) && $_SESSION['is_authenticated'] === true) {
     header("Location: secure_page.php");
     exit();
 } else if (isset($_SESSION['otp_email'])) {
@@ -18,6 +21,7 @@ $otp_sent = false;
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
+    $rememberMe = isset($_POST['rememberMe']);
 
     try {
         $user_id = authenticate_user($email, $password);
@@ -25,6 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $message = "Invalid email or password.";
             $password = '';
         } else {
+            if ($rememberMe) {
+                set_remember_token($email);
+            }
             $_SESSION['otp_email'] = $email;
             if (send_otp($user_id)) {
                 header('Location: verify_otp.php');
@@ -49,6 +56,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="mb-3">
             <label for="password" class="form-label">Password</label>
             <input type="password" class="form-control" id="password" name="password" value="<?php echo htmlspecialchars($password); ?>" required>
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="rememberMe" name="rememberMe">
+            <label class="form-check-label" for="rememberMe">Remember me</label>
         </div>
         <?php if ($message && !$otp_sent) : ?>
             <div class="alert alert-danger small" role="alert">

@@ -5,11 +5,10 @@ include 'functions.php';
 if (isset($_SESSION['email']) && isset($_SESSION['is_authenticated']) && $_SESSION['is_authenticated'] === true) {
     header("Location: secure_page.php");
     exit();
-} else if (!isset($_SESSION['otp_email'])) {
+} else if (!isset($_SESSION['otp_email']) && !check_remember_token()) {
     header("Location: secure_page.php");
     exit();
 }
-
 
 $message = '';
 

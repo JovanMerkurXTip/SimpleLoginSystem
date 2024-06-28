@@ -147,7 +147,7 @@ function check_remember_token()
 
     if (!isset($_COOKIE['remember_token'])) {
         echo "<script>console.log('No remember token found.');</script>";
-        return false; // TODO: Handle this case
+        return false;
     }
 
     $token = $_COOKIE['remember_token'];
@@ -160,11 +160,15 @@ function check_remember_token()
 
     if (!$email) {
         echo "<script>console.log('Invalid remember token.');</script>";
-        return false; // TODO: Handle this case
+        return false;
     }
 
-    session_start();
+    if (!isset($_SESSION)) {
+        session_start();
+    }
     $_SESSION['email'] = $email;
+    $_SESSION['is_authenticated'] = true;
+    return true;
 }
 
 function generate_reset_link($email)
