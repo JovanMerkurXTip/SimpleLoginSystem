@@ -1,11 +1,22 @@
 <?php
 include 'functions.php';
 
+if (check_remember_token()) {
+    header("Location: secure_page.php");
+    exit();
+} else if (isset($_SESSION['email']) && isset($_SESSION['is_authenticated']) && $_SESSION['is_authenticated'] === true) {
+    header("Location: secure_page.php");
+    exit();
+} else if (isset($_SESSION['otp_email'])) {
+    header("Location: verify_otp.php");
+    exit();
+}
+
 $message = '';
 $email = '';
 $password = '';
 $repeat_password = '';
-$registration_successful = false; // Flag to trigger modal
+$registration_successful = false;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
@@ -37,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <?php include 'includes/header.php'; ?>
 
 <div class="d-flex justify-content-center align-items-center vh-100">
-    <form class="form border p-4 bg-light" method="post" action="register.php">
+    <form class="form border p-4 bg-light" method="post" action="register.php" onsubmit="showLoader()">
         <h4>Create an Account</h4>
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>
@@ -56,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php echo $message; ?>
             </div>
         <?php endif; ?>
-        <button type="submit" class="btn btn-primary w-100">Create an Account</button>
+        <button type="submit" class="btn btn-primary w-100" id="registerButton">Create an Account</button>
         <div class="d-flex justify-content-between mt-3">
             <a href="login.php">Go to Sign in</a>
         </div>
@@ -93,4 +104,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             });
         <?php endif; ?>
     });
+
+    function showLoader() {
+        const registerButton = document.getElementById('registerButton');
+        registerButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+        registerButton.disabled = true;
+    }
 </script>

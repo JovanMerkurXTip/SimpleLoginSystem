@@ -24,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (generate_reset_link($email)) {
             $link_sent = true;
         }
-        header("Location: index.php");
     } catch (Exception $e) {
         $message = "An error occurred: " . $e->getMessage();
     }
@@ -53,9 +52,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </form>
 </div>
 
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">Reset link sent</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Password reset link sent. Please check your email.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="redirectHomeButton">Okay</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php include 'includes/footer.php'; ?>
 
 <script>
+    $(document).ready(function() {
+        <?php if ($link_sent) : ?>
+            var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            successModal.show();
+
+            $('#redirectHomeButton').click(function() {
+                window.location.href = 'index.php';
+            });
+        <?php endif; ?>
+    });
+
     function showLoader() {
         const sendLinkButton = document.getElementById('sendLinkButton');
         sendLinkButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';

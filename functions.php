@@ -68,6 +68,7 @@ function generate_registration_verification_link($email)
         $stmt->close();
 
         if (!$user_id) {
+            echo_console_log("User not found.");
             return false;
         }
 
@@ -78,6 +79,7 @@ function generate_registration_verification_link($email)
         $stmt->close();
 
         if (!send_verify_account_link($email, $verification_link)) {
+            echo_console_log("Failed to send verification email.");
             return false;
         }
 
@@ -132,6 +134,11 @@ function authenticate_user($email, $password)
     $stmt->bind_result($user_id, $db_password, $salt, $is_verified);
     $stmt->fetch();
     $stmt->close();
+
+    if (!$user_id) {
+        echo_console_log("User not found.");
+        return false;
+    }
 
     if (!$is_verified) {
         echo_console_log("Account not verified.");

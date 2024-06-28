@@ -68,6 +68,11 @@ ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`);
 
+-- AUTO_INCREMENT ------------------------------------------------
+
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
 -- CONSTRAINTS ---------------------------------------------------
 
 ALTER TABLE `login_otp_codes`
