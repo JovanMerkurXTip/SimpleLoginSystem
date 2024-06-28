@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <div class="d-flex justify-content-center align-items-center vh-100">
     <form class="form border p-4 bg-light" method="post" action="login.php" onsubmit="showLoader()">
-        <h4>Login</h4>
+        <h4>Sign In</h4>
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>
             <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" required>
@@ -55,9 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php echo $message; ?>
             </div>
         <?php endif; ?>
-        <button type="submit" class="btn btn-primary w-100" id="loginButton">Login</button>
+        <button type="submit" class="btn btn-primary w-100" id="loginButton">Sign in</button>
         <div class="d-flex justify-content-between mt-3">
-            <a href="register.php">Create an account</a>
+            <a href="register.php">Create an Account</a>
             <a href="forgot_password.php">Forgot password?</a>
         </div>
     </form>

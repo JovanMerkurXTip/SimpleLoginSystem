@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($password === $repeat_password) {
             try {
                 register_user($email, $password);
-                $message = "Registration successful. You can now login.";
+                $message = "Registration successful. You can now sign in.";
                 $registration_successful = true;
             } catch (Exception $e) {
                 if ($e->getCode() === 1062) {
@@ -56,9 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php echo $message; ?>
             </div>
         <?php endif; ?>
-        <button type="submit" class="btn btn-primary w-100">Register</button>
+        <button type="submit" class="btn btn-primary w-100">Create an Account</button>
         <div class="d-flex justify-content-between mt-3">
-            <a href="login.php">Go to Login</a>
+            <a href="login.php">Go to Sign in</a>
         </div>
     </form>
 </div>
@@ -71,10 +71,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                Registration successful. You can now login.
+                Registration successful. You can now sign in.
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="redirectLoginButton">OK</button>
+                <button type="button" class="btn btn-primary" id="redirectLoginButton">Okay</button>
             </div>
         </div>
     </div>
