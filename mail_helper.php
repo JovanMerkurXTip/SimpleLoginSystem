@@ -3,7 +3,6 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-
 function send_email($to, $subject, $body)
 {
     $config = require 'email_config.php';
@@ -11,7 +10,6 @@ function send_email($to, $subject, $body)
     $mail = new PHPMailer(true);
 
     try {
-        //Server settings
         $mail->SMTPDebug = 0;
         $mail->isSMTP();
         $mail->Host       = $config['smtp']['host'];
@@ -52,6 +50,16 @@ function send_reset_password_link($to, $link)
     $subject = 'Reset Password';
 
     $body = file_get_contents('html/email_template_reset_password.html');
+    $body = str_replace('%LINK%', $link, $body);
+
+    return send_email($to, $subject, $body);
+}
+
+function send_verify_account_link($to, $link)
+{
+    $subject = 'Verify Account';
+
+    $body = file_get_contents('html/email_template_verify_account.html');
     $body = str_replace('%LINK%', $link, $body);
 
     return send_email($to, $subject, $body);

@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($password === $repeat_password) {
             try {
                 register_user($email, $password);
-                $message = "Registration successful. You can now sign in.";
+                $message = "Registration successful. Please check your email for the verification link. After verification, you can sign in.";
                 $registration_successful = true;
             } catch (Exception $e) {
                 if ($e->getCode() === 1062) {
@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                Registration successful. You can now sign in.
+                Registration successful. Please check your email for the verification link. After verification, you can sign in.
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="redirectLoginButton">Okay</button>

@@ -33,7 +33,7 @@ CREATE TABLE login_otp_codes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     otp VARCHAR(6) NOT NULL,
-    otp_expiration DATETIME NOT NULL,
+    expiration DATETIME NOT NULL,
     UNIQUE KEY user_otp (user_id, otp),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

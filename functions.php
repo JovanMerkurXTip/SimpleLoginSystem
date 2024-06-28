@@ -26,35 +26,121 @@ function register_user($email, $password)
     $hashed_password = hash_password($password, $salt);
 
     try {
-        $stmt = $conn->prepare("INSERT INTO users (email, password, salt) VALUES (?, ?, ?)");
+        $is_verified = 0;
+        $stmt = $conn->prepare("INSERT INTO users (email, password, salt, is_verified) VALUES (?, ?, ?, ?)");
         if (!$stmt) {
             throw new Exception($conn->error);
         }
-        $stmt->bind_param("sss", $email, $hashed_password, $salt);
+        $stmt->bind_param("sssi", $email, $hashed_password, $salt, $is_verified);
         if (!$stmt->execute()) {
             throw new Exception($stmt->error);
         }
         $stmt->close();
+
+        if (!generate_registration_verification_link($email)) {
+
+            $stmt = $conn->prepare("DELETE FROM users WHERE email = ?");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $stmt->close();
+
+            throw new Exception("Failed to send verification email.");
+        }
     } catch (Exception $e) {
         throw $e;
     }
 }
+
+function generate_registration_verification_link($email)
+{
+    global $conn;
+
+    try {
+        $token = bin2hex(random_bytes(32));
+        $expiration = date('Y-m-d H:i:s', strtotime('+1 day'));
+        $verification_link = BASE_URL . "verify_account.php?token=$token";
+
+        $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $stmt->bind_result($user_id);
+        $stmt->fetch();
+        $stmt->close();
+
+        if (!$user_id) {
+            return false;
+        }
+
+        $stmt = $conn->prepare("INSERT INTO registration_verification_tokens (user_id, token, expiration) VALUES (?, ?, ?)
+                                ON DUPLICATE KEY UPDATE token = ?, expiration = ?");
+        $stmt->bind_param("issss", $user_id, $token, $expiration, $token, $expiration);
+        $stmt->execute();
+        $stmt->close();
+
+        if (!send_verify_account_link($email, $verification_link)) {
+            return false;
+        }
+
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+function verify_account($token)
+{
+    global $conn;
+
+    $stmt = $conn->prepare("SELECT user_id FROM registration_verification_tokens WHERE token = ? AND expiration > NOW()");
+    $stmt->bind_param("s", $token);
+    $stmt->execute();
+    $stmt->bind_result($user_id);
+    $stmt->fetch();
+    $stmt->close();
+
+    if (!$user_id) {
+        echo_console_log("Invalid or expired token.");
+        return false;
+    }
+
+    $stmt = $conn->prepare("UPDATE users SET is_verified = 1 WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $stmt->close();
+
+    $stmt = $conn->prepare("DELETE FROM registration_verification_tokens WHERE user_id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $stmt->close();
+
+    echo_console_log("Account verified successfully.");
+    return true;
+}
+
+
 
 
 function authenticate_user($email, $password)
 {
     global $conn;
 
-    $stmt = $conn->prepare("SELECT id, password, salt FROM users WHERE email = ?");
+    // TODO: Refuse if user is not verified.
+
+    $stmt = $conn->prepare("SELECT id, password, salt, is_verified FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
-    $stmt->bind_result($user_id, $db_password, $salt);
+    $stmt->bind_result($user_id, $db_password, $salt, $is_verified);
     $stmt->fetch();
     $stmt->close();
 
+    if (!$is_verified) {
+        echo_console_log("Account not verified.");
+        return false;
+    }
+
     if (!$user_id || $db_password !== hash_password($password, $salt)) {
         echo_console_log("Invalid email or password.");
-        return false; // TODO: Handle this case
+        return false;
     }
 
     return $user_id;
@@ -66,11 +152,11 @@ function send_otp($user_id)
 
     try {
         $otp = rand(100000, 999999);
-        $otp_expiration = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+        $expiration = date('Y-m-d H:i:s', strtotime('+5 minutes'));
 
-        $stmt = $conn->prepare("INSERT INTO login_otp_codes (user_id, otp, otp_expiration) VALUES (?, ?, ?)
-                            ON DUPLICATE KEY UPDATE otp = ?, otp_expiration = ?");
-        $stmt->bind_param("issss", $user_id, $otp, $otp_expiration, $otp, $otp_expiration);
+        $stmt = $conn->prepare("INSERT INTO login_otp_codes (user_id, otp, expiration) VALUES (?, ?, ?)
+                            ON DUPLICATE KEY UPDATE otp = ?, expiration = ?");
+        $stmt->bind_param("issss", $user_id, $otp, $expiration, $otp, $expiration);
         $stmt->execute();
         $stmt->close();
 
@@ -107,14 +193,14 @@ function verify_otp($email, $otp)
         return "User not found.";
     }
 
-    $stmt = $conn->prepare("SELECT otp, otp_expiration FROM login_otp_codes WHERE user_id = ?");
+    $stmt = $conn->prepare("SELECT otp, expiration FROM login_otp_codes WHERE user_id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
-    $stmt->bind_result($db_otp, $otp_expiration);
+    $stmt->bind_result($db_otp, $expiration);
     $stmt->fetch();
     $stmt->close();
 
-    if (!($db_otp === $otp && strtotime($otp_expiration) > time())) {
+    if (!($db_otp === $otp && strtotime($expiration) > time())) {
         return "Invalid or expired passcode.";
     }
 
@@ -196,7 +282,7 @@ function generate_reset_link($email)
         }
 
         $stmt = $conn->prepare("INSERT INTO password_reset_tokens (user_id, token, expiration) VALUES (?, ?, ?)
-                            ON DUPLICATE KEY UPDATE token = ?, expiration = ?");
+                                ON DUPLICATE KEY UPDATE token = ?, expiration = ?");
         $stmt->bind_param("issss", $user_id, $token, $expiration, $token, $expiration);
         $stmt->execute();
         $stmt->close();
@@ -225,7 +311,7 @@ function reset_password($token, $new_password)
 
         if (!$user_id) {
             echo_console_log("Invalid or expired token.");
-            return false; // TODO: Handle this case
+            return false;
         }
 
         $stmt = $conn->prepare("SELECT email, salt FROM users WHERE id = ?");
@@ -237,7 +323,7 @@ function reset_password($token, $new_password)
 
         if (!$email) {
             echo_console_log("User not found.");
-            return false; // TODO: Handle this case
+            return false;
         }
 
         $hashed_password = hash_password($new_password, $salt);
@@ -253,7 +339,6 @@ function reset_password($token, $new_password)
 
         echo_console_log("Password reset successfully.");
         return true;
-
     } catch (Exception $e) {
         return false;
     }
